@@ -1,13 +1,12 @@
-package counter.locked.mutex.nonatomic;
+package counter.locked.spinlock.nonatomic;
 
-import static counter.locked.mutex.nonatomic.CounterExample.*;
+import static counter.locked.spinlock.nonatomic.CounterExample.*;
 
-public class NonSynchronizedPlusCounter implements Runnable {
+public class NonSynchronizedCounter implements Runnable {
 	private final String counterName;
 	private final int countLimit;
-	private final int turn;
 
-	public NonSynchronizedPlusCounter(String counterName, int countLimit, int turn) {
+	public NonSynchronizedCounter(String counterName, int countLimit) {
 
 		if (countLimit < 0) {
 			throw new IllegalArgumentException("Count Limit Should Be 0 Or Greater.");
@@ -15,7 +14,6 @@ public class NonSynchronizedPlusCounter implements Runnable {
 
 		this.counterName = counterName;
 		this.countLimit = countLimit;
-		this.turn = turn;
 	}
 
 	@Override
@@ -24,7 +22,7 @@ public class NonSynchronizedPlusCounter implements Runnable {
 		int count = 0;
 
 		while (count++ < countLimit) {
-			lockOn(turn);
+			lockOn();
 
 			criticalSection(counterName);
 
@@ -32,22 +30,18 @@ public class NonSynchronizedPlusCounter implements Runnable {
 		}
 	}
 
-	private static void lockOn(int turn) {
-		while (turn != lock % threadNum) {
-			// busy waiting
+	private static void lockOn() {
+		while (lock <= 0) {
+			lock--;
 		}
 	}
 
 	private static void criticalSection(String counterName) {
-
-		int currentValue = accountMap.get(accountName);
-
-		accountMap.put(accountName, currentValue + 100);
-
 		try {
+			methodCalled++;
 			Thread.sleep(1);
 		} catch (InterruptedException e) {
-			System.out.println("Thread Interrupted.");
+			System.out.println("Interruption Error Occurs: " + counterName);
 		}
 	}
 

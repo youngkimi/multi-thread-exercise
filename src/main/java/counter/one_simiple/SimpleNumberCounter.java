@@ -1,4 +1,4 @@
-package counter.simple;
+package counter.one_simiple;
 
 public class SimpleNumberCounter implements Runnable {
 	private final String counterName;
@@ -19,13 +19,11 @@ public class SimpleNumberCounter implements Runnable {
 	@Override
 	public void run() {
 
-		int count = 0;
-
-		while (count < countLimit) {
-			System.out.println(counterName + " - Count: " + (stt + count++));
+		for (int i = 0; i < countLimit; i++) {
+			System.out.println(counterName + " - Count: " + (stt + i));
 
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(100);
 			} catch (InterruptedException e) {
 				System.out.println(counterName + " interrupted.");
 			}
