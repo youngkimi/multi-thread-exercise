@@ -377,6 +377,12 @@ Final methodCalled Value: 6000000
 The occurrence of these errors indicates that the value of `lock` was different from the value of `methodCalled` at the comparison. Even though `volatile` ensures visibility of the variable among threads, such errors can occur because multiple thread may try to modify the shared variable simultaneously.
 We need to separate the section modifying shared variables, and ensure that only one thread the section can access to this section at a time. This section is called the `Critical Section`  
 
+# Atomic
+
+
+# wait() and modify()
+
+
 # 할일 목록.
 
 # We will use `wait()` and `notify()` method to coordinate the execution.
