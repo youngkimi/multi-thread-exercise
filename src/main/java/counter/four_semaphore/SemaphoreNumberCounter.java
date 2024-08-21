@@ -27,10 +27,9 @@ public class SemaphoreNumberCounter implements Runnable {
 	}
 
 	private void acquireLock() {
-		while (lock <= 0) {
-
+		while (--lock <= 0) {
+			lock++;
 		};
-		lock --;
 	}
 
 	private void criticalSection() {

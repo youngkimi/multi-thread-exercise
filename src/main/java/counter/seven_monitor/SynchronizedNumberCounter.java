@@ -1,7 +1,7 @@
-package counter.five_synchronized;
+package counter.seven_monitor;
 
-import static counter.five_synchronized.SynchronizedCounterExample.lockCount;
-import static counter.five_synchronized.SynchronizedCounterExample.threadCalled;
+import static counter.seven_monitor.SynchronizedCounterExample.lock;
+import static counter.seven_monitor.SynchronizedCounterExample.threadCalled;
 
 public class SynchronizedNumberCounter implements Runnable {
 	private final int countLimit;
@@ -18,23 +18,13 @@ public class SynchronizedNumberCounter implements Runnable {
 	@Override
 	public void run() {
 		for (int i = 0; i < countLimit; i++) {
-			acquireLock();
 			criticalSection();
-			releaseLock();
-		}
-	}
-
-	private synchronized void acquireLock() {
-		while (--lockCount < 0) {
-			lockCount++;
 		}
 	}
 
 	private synchronized void criticalSection() {
-		threadCalled++;
-	}
-
-	private synchronized void releaseLock() {
-		lockCount ++;
+		synchronized (lock) {
+			threadCalled++;
+		}
 	}
 }

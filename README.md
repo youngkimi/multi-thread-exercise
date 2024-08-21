@@ -299,18 +299,21 @@ You might have thought we were multithreading, but to be precise, we’re not.
 We've only used one thread at a time. Why don't we increase the `lock` size so that multiple tasks can be handled simultaneously?
 
 ```java
-private void takeLock() {
-		while (lock <= 0) {
+private void acquireLock() {
+    while (--lock <= 0) {
+        lock++;
+    };
+}
 
-		};
-		lock --;
-	}
+private void criticalSection() {
+    threadCalled ++;
+}
 
 private void releaseLock() {
     lock ++;
 }
 ```
-When a thread needs to work, it first acquires a lock. If all locks are occupied by other threads, it waits until one becomes available.
+When a thread needs to work, it first acquires a lock. If all locks are occupied by other threads, it cancels the acquisition of the lock.
 If a lock is available, the thread acquires it by decrementing the lock count.
 Once the task is finished, the thread releases the lock by incrementing the lock count.
 
@@ -329,9 +332,79 @@ The reason the code isn't working is that the `lock` value might be lost or over
 To address this, we added `volatile` to the shared variables so that each thread can see the up-to-date values.
 However, if the `lock` value is greater than 0, multiple threads might mistakenly believe they can acquire it, resulting in more threads acquiring locks than are actually available.
 Additionally, when threads update the `lock` value, it might be overwritten due to simultaneous access.
-
 Therefore, we need to ensure that access to the shared variables is restricted to only one thread at a time. In java, we can use `synchronized`.
+
+Then, can we solve every `synchronization` problem with `volatile` and `synchronized`? Unfortunately, we're not.
+
+```java
+package counter.five_synchronized;
+
+import static counter.five_synchronized.SynchronizedCounterExample.lockCount;
+import static counter.five_synchronized.SynchronizedCounterExample.threadCalled;
+
+public class SynchronizedNumberCounter implements Runnable {
+    private final int countLimit;
+
+    public SynchronizedNumberCounter(int countLimit) {
+
+        if (countLimit < 0) {
+            throw new IllegalArgumentException("Count Limit Should Be 0 Or Greater.");
+        }
+
+        this.countLimit = countLimit;
+    }
+
+    @Override
+    public void run() {
+        for (int i = 0; i < countLimit; i++) {
+            acquireLock();
+            criticalSection();
+            releaseLock();
+        }
+    }
+
+    private synchronized void acquireLock() {
+        while (--lockCount < 0) {
+            lockCount++;
+        }
+    }
+
+    private synchronized void criticalSection() {
+        threadCalled++;
+    }
+
+    private synchronized void releaseLock() {
+        lockCount ++;
+    }
+}
+```
+
+I refactored like this. All shared variables are declared as `volatile`, and methods modifying the shared variables are declared as `synchronized`.
+
+```
+Thread size: 8, counterLimit: 100
+Atomic Thread called: 800
+```
+
+It works fine with 3 digits, but if you increase the digit, same problem we've seen before occurs. 
+
+### 6. monitor lock
+
+
+
+
+### AtomicType
+
+
+
+
+But, although you add `synchronized` to your method accessing to shared variables, error may occur during 
+
+
+
 Simply adding synchronized to the methods that use the shared variables makes it work perfectly.
+
+But in fact, simply adding `synchronized` is not enough. 
 
 ```
 Thread0 - Count: 1

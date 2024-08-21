@@ -1,17 +1,18 @@
-package counter.five_synchronized;
+package counter.six_atomic;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class SynchronizedCounterExample {
 
-	protected static int threadSize = 8;
+	protected static int threadSize = 6;
 	protected static Thread[] threads = new Thread[threadSize];
-
-	// set volatile to these variables.
-	protected static volatile int threadCalled = 0;
-	protected static volatile int lockCount = 3;
+	protected static int threadCalled = 0;
+	// final not to be re-assigned
+	protected static final Object lock = new Object();
 
 	public static void main(String[] args) {
 
-		int countLimit = 100;
+		int countLimit = 10000000;
 
 		for (int i = 0; i < threadSize; i++) {
 			Runnable counter = new SynchronizedNumberCounter(countLimit);
