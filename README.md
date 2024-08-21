@@ -1,6 +1,6 @@
 ## Multithreading Exercise
 
-Our goal of this exercise is to create a real-time chat program using TCP(or UDP).  
+Our goal of this exercise is to create a matrics 
 
 ### 1. Simple Counter
 
@@ -13,42 +13,7 @@ Here is basic example to illustrate how to use `Runnable` and `Thread` :
 `SimpleNumberCounter` counts `counterLimit` times, starting from `stt`.
 
 ```java
-package counter.one_simiple;
-
-public class SimpleNumberCounter implements Runnable {
-    private final String counterName;
-    private final int stt;
-    private final int countLimit;
-
-    public SimpleNumberCounter(String counterName, int stt, int countLimit) {
-
-        if (countLimit < 0) {
-            throw new IllegalArgumentException("Count Limit Should Be 0 Or Greater.");
-        }
-
-        this.counterName = counterName;
-        this.stt = stt;
-        this.countLimit = countLimit;
-    }
-
-    @Override
-    public void run() {
-
-        for (int i = 0; i < countLimit; i++) {
-            System.out.println(counterName + " - Count: " + (stt + i));
-
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                System.out.println(counterName + " interrupted.");
-            }
-        }
-    }
-}
-```
-
-```java
-package counter.one_simiple;
+package counter.a_simiple;
 
 public class SimpleCounterExample {
 
@@ -57,9 +22,9 @@ public class SimpleCounterExample {
 		int countLimit = 5;
 
 		try {
-			Runnable counter1 = new SimpleNumberCounter("Thread 1", 101, countLimit);
-			Runnable counter2 = new SimpleNumberCounter("Thread 2", 201, countLimit);
-			Runnable counter3 = new SimpleNumberCounter("Thread 3", 301, countLimit);
+			Runnable counter1 = new SimpleNumberCounter("Thread 1", countLimit);
+			Runnable counter2 = new SimpleNumberCounter("Thread 2", countLimit);
+			Runnable counter3 = new SimpleNumberCounter("Thread 3", countLimit);
 
 			Thread thread1 = new Thread(counter1);
 			Thread thread2 = new Thread(counter2);
@@ -72,31 +37,58 @@ public class SimpleCounterExample {
 			System.out.println(e.getMessage());
 		}
 	}
+
+	private static class SimpleNumberCounter implements Runnable {
+		private final String counterName;
+		private final int countLimit;
+
+		public SimpleNumberCounter(String counterName, int countLimit) {
+
+			if (countLimit < 0) {
+				throw new IllegalArgumentException("Count Limit Should Be 0 Or Greater.");
+			}
+
+			this.counterName = counterName;
+			this.countLimit = countLimit;
+		}
+
+		@Override
+		public void run() {
+			for (int i = 1; i <= countLimit; i++) {
+				System.out.println(counterName + " - Counted: " + i);
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					System.out.println(counterName + " interrupted.");
+				}
+			}
+		}
+	}
 }
 ```
 
 Here is the result. 
 
 ```
-Thread 2 - Count: 201
-Thread 1 - Count: 101
-Thread 3 - Count: 301
-Thread 1 - Count: 102
-Thread 2 - Count: 202
-Thread 3 - Count: 302
-Thread 1 - Count: 103
-Thread 2 - Count: 203
-Thread 3 - Count: 303
-Thread 1 - Count: 104
-Thread 2 - Count: 204
-Thread 3 - Count: 304
-Thread 1 - Count: 105
-Thread 2 - Count: 205
-Thread 3 - Count: 305
+Thread 1 - Counted: 1
+Thread 3 - Counted: 1
+Thread 2 - Counted: 1
+Thread 1 - Counted: 2
+Thread 3 - Counted: 2
+Thread 2 - Counted: 2
+Thread 1 - Counted: 3
+Thread 3 - Counted: 3
+Thread 2 - Counted: 3
+Thread 1 - Counted: 4
+Thread 2 - Counted: 4
+Thread 3 - Counted: 4
+Thread 1 - Counted: 5
+Thread 2 - Counted: 5
+Thread 3 - Counted: 5
 ```
 
 As you can check, threads seem to work concurrently.
-But sometimes `Thread2` finishes its job faster than `Thread1`. The message that `Thread1` has finished its job might show up either after or before `Thread2` finished counting.
+But the message that `Thread 3` has finished its job might show up either after or before `Thread 2` finished counting.
 
 Let's raise the bar. Due to certain business conditions, `Thread1` has priority over `Thread2` for each count. `Thread2` can only count after `Thread1` has completed its count. How can we achieve that? The Key is `Lock`. ~~sounds like a punchline~~
 
@@ -114,63 +106,7 @@ We added a `turn` and a `trigger`. The `trigger` is a specific number assigned w
 After the task is finished, we increment the `turn`. If the `turn` equals the threadSize, we reset it to zero.
 
 ```java
-package counter.one_simiple;
-
-import static counter.one_simiple.LockedCounterExample.threadSize;
-import static counter.one_simiple.LockedCounterExample.turn;
-
-public class LockedNumberCounter implements Runnable {
-	private final String counterName;
-	private final int countLimit;
-	private final int trigger;
-
-	public LockedNumberCounter(String counterName, int countLimit, int trigger) {
-
-		if (countLimit < 0) {
-			throw new IllegalArgumentException("Count Limit Should Be 0 Or Greater.");
-		}
-
-		this.counterName = counterName;
-		this.countLimit = countLimit;
-		this.trigger = trigger;
-	}
-
-	@Override
-	public void run() {
-
-		for (int i = 0; i < countLimit; i++) {
-
-			isWaiting();
-
-			System.out.println(counterName + " called.");
-
-			passTheBall();
-
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				System.out.println(counterName + " interrupted.");
-			}
-		}
-	}
-
-	private void isWaiting() {
-		while (turn % threadSize != trigger) {
-
-		};
-	}
-	private void passTheBall() {
-		turn ++;
-		if (turn == threadSize) {
-			turn = 0;
-		}
-	}
-}
-
-```
-
-```java
-package counter.one_simiple;
+package counter.b_spinlock;
 
 public class LockedCounterExample {
 
@@ -191,6 +127,54 @@ public class LockedCounterExample {
 			System.out.println(e.getMessage());
 		}
 	}
+
+	private static class LockedNumberCounter implements Runnable {
+		private final String counterName;
+		private final int countLimit;
+		private final int trigger;
+
+		public LockedNumberCounter(String counterName, int countLimit, int trigger) {
+
+			if (countLimit < 0) {
+				throw new IllegalArgumentException("Count Limit Should Be 0 Or Greater.");
+			}
+
+			this.counterName = counterName;
+			this.countLimit = countLimit;
+			this.trigger = trigger;
+		}
+
+		@Override
+		public void run() {
+
+			for (int i = 0; i < countLimit; i++) {
+
+				isWaiting();
+
+				System.out.println(counterName + " called.");
+
+				passTheBall();
+
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					System.out.println(counterName + " interrupted.");
+				}
+			}
+		}
+
+		private void isWaiting() {
+			while (turn % threadSize != trigger) {
+
+			}
+		}
+		private void passTheBall() {
+			turn ++;
+			if (turn == threadSize) {
+				turn = 0;
+			}
+		}
+	}
 }
 ```
 
@@ -212,59 +196,91 @@ Thread 1 called.
 Thread 2 called.
 ```
 
+The process where only one thread can access shared variables is called `mutual exclusion`, or simply `mutex`.
 It seems fine, right? But... is it? 
 
 ### 3. volatile
 
 ```java
-package counter.one_volatile;
+package counter.c_volatile;
 
-import static counter.one_volatile.VolatileCounterExample.*;
+public class VolatileCounterExample {
 
-public class VolatileNumberCounter implements Runnable {
-	private final String counterName;
-	private final int countLimit;
-	private final int trigger;
+	protected static int threadSize = 3;
+	protected static Thread[] threads = new Thread[threadSize];
 
-	public VolatileNumberCounter(String counterName, int countLimit, int trigger) {
+	// set volatile to these variables.
+	protected static int threadCalled = 0;
+	protected static int turn = 0;
 
-		if (countLimit < 0) {
-			throw new IllegalArgumentException("Count Limit Should Be 0 Or Greater.");
+	public static void main(String[] args) {
+
+		int countLimit = 1000;
+
+		for (int i = 0; i < threadSize; i++) {
+			Runnable counter = new VolatileNumberCounter("Thread " + i, countLimit, i);
+			threads[i] = new Thread(counter);
+			threads[i].start();
 		}
 
-		this.counterName = counterName;
-		this.countLimit = countLimit;
-		this.trigger = trigger;
+		for (Thread t : threads) {
+            try {
+                t.join();
+            } catch (InterruptedException e) {
+				System.out.println("Thread Interrupted: " + t.getName());
+            }
+        }
+
+		System.out.println("Thread size: " + threadSize + ", counterLimit: " + countLimit);
+		System.out.println("Thread called: " + threadCalled);
 	}
 
-	@Override
-	public void run() {
-		for (int i = 0; i < countLimit; i++) {
+	private static class VolatileNumberCounter implements Runnable {
+		private final String counterName;
+		private final int countLimit;
+		private final int trigger;
 
-			isWaiting();
+		public VolatileNumberCounter(String counterName, int countLimit, int trigger) {
 
-			criticalSection();
+			if (countLimit < 0) {
+				throw new IllegalArgumentException("Count Limit Should Be 0 Or Greater.");
+			}
 
-			passTheBall();
+			this.counterName = counterName;
+			this.countLimit = countLimit;
+			this.trigger = trigger;
+		}
+
+		@Override
+		public void run() {
+			for (int i = 0; i < countLimit; i++) {
+
+				isWaiting();
+
+				criticalSection();
+
+				passTheBall();
+			}
+		}
+
+		private void isWaiting() {
+			while (turn % threadSize != trigger) {
+
+			};
+		}
+
+		private void criticalSection() {
+			threadCalled++;
+		}
+
+		private void passTheBall() {
+			turn ++;
+			if (turn == threadSize) {
+				turn = 0;
+			}
 		}
 	}
 
-	private void isWaiting() {
-		while (turn % threadSize != trigger) {
-
-		};
-	}
-
-	private void criticalSection() {
-		methodCalled++;
-	}
-
-	private void passTheBall() {
-		turn ++;
-		if (turn == threadSize) {
-			turn = 0;
-		}
-	}
 }
 ```
 
@@ -284,8 +300,8 @@ Even if one thread changes the value of `turn`, the others might still see the o
 We can fix this problem by declaring lock as `volatile`. This way, each thread watches the value of `turn` from memory, not from its cache.
 
 ```
-Thread size: 3, counterLimit: 1000
-Thread called: 3000
+Thread size: 3, counterLimit: 10000000
+Thread called: 30000000
 ```
 
 Now it’s perfect, right? Unfortunately, it’s not.
@@ -302,7 +318,7 @@ We've only used one thread at a time. Why don't we increase the `lock` size so t
 private void acquireLock() {
     while (--lock <= 0) {
         lock++;
-    };
+    }
 }
 
 private void criticalSection() {
@@ -317,14 +333,24 @@ When a thread needs to work, it first acquires a lock. If all locks are occupied
 If a lock is available, the thread acquires it by decrementing the lock count.
 Once the task is finished, the thread releases the lock by incrementing the lock count.
 
+But unfortunately, you need to make sure that shared variables are accessed by only one thread at a time.
+If multiple threads access them simultaneously, it can cause concurrency problems.
+That's why you should keep the `lockCount` at 1, which is what we call a `binary semaphore`.
+
+You might think there is no difference between `mutex` and `binary semaphore`, but there are some distinctions.
+First, since a `mutex` can lock a target object, it cannot be accessed by another thread as long as one thread is holding the lock.
+On the other hand, `binary semaphore` doesn't enforce ownership, meaning that any thread can release the semaphore, not just the one that acquired it.
+
+waiting thread implemented by `mutex` cannot be wakened up by another thread.
+
 ```
 Thread size: 3, counterLimit: 100
-Thread called: 300
+Thread called: 299
 ```
 
-But increasing `countLimit` can lead to the same problems: infinite loops.
-Or when the job is completed, but the results may not be as expected.
-Let's move on to the next chapter.
+But when the job is completed, but the results may not be as expected. 
+Or increasing `countLimit` can lead to the same problems: infinite loops.
+Why do these things happen?
 
 ### 5. synchronized
 
@@ -334,66 +360,89 @@ However, if the `lock` value is greater than 0, multiple threads might mistakenl
 Additionally, when threads update the `lock` value, it might be overwritten due to simultaneous access.
 Therefore, we need to ensure that access to the shared variables is restricted to only one thread at a time. In java, we can use `synchronized`.
 
-Then, can we solve every `synchronization` problem with `volatile` and `synchronized`? Unfortunately, we're not.
+# 자바 객체의 Lock 이야기와, (this)를 사용하면 안되는 이유. thread Local 에 대해서.
 
 ```java
-package counter.five_synchronized;
+package counter.e_synchronized;
 
-import static counter.five_synchronized.SynchronizedCounterExample.lockCount;
-import static counter.five_synchronized.SynchronizedCounterExample.threadCalled;
+public class SynchronizedCounterExample {
 
-public class SynchronizedNumberCounter implements Runnable {
-    private final int countLimit;
+    protected static int threadSize = 8;
+    protected static Thread[] threads = new Thread[threadSize];
+    // set volatile to these variables.
+    protected static volatile int threadCalled = 0;
+    // set lock final not to be reassigned.
+    protected static final Object lock = new Object();
 
-    public SynchronizedNumberCounter(int countLimit) {
+    public static void main(String[] args) {
 
-        if (countLimit < 0) {
-            throw new IllegalArgumentException("Count Limit Should Be 0 Or Greater.");
+        int countLimit = 1000000;
+
+        for (int i = 0; i < threadSize; i++) {
+            Runnable counter = new SynchronizedNumberCounter(countLimit);
+            threads[i] = new Thread(counter);
+            threads[i].start();
         }
 
-        this.countLimit = countLimit;
-    }
-
-    @Override
-    public void run() {
-        for (int i = 0; i < countLimit; i++) {
-            acquireLock();
-            criticalSection();
-            releaseLock();
+        for (Thread t : threads) {
+            try {
+                t.join();
+            } catch (InterruptedException e) {
+                System.out.println("Thread Interrupted: " + t.getName());
+            }
         }
+
+        System.out.println("Thread size: " + threadSize + ", counterLimit: " + countLimit);
+        System.out.println("Atomic Thread called: " + threadCalled);
     }
 
-    private synchronized void acquireLock() {
-        while (--lockCount < 0) {
-            lockCount++;
+    private static class SynchronizedNumberCounter implements Runnable {
+        private final int countLimit;
+
+        public SynchronizedNumberCounter(int countLimit) {
+
+            if (countLimit < 0) {
+                throw new IllegalArgumentException("Count Limit Should Be 0 Or Greater.");
+            }
+
+            this.countLimit = countLimit;
         }
-    }
 
-    private synchronized void criticalSection() {
-        threadCalled++;
-    }
+        @Override
+        public void run() {
+            for (int i = 0; i < countLimit; i++) {
+                criticalSection();
+            }
+        }
 
-    private synchronized void releaseLock() {
-        lockCount ++;
+        private synchronized void criticalSection() {
+            synchronized (lock) {
+                threadCalled++;
+            }
+        }
     }
 }
 ```
 
-I refactored like this. All shared variables are declared as `volatile`, and methods modifying the shared variables are declared as `synchronized`.
+I refactored the code as follows. 
+All shared variables are declared as `volatile`, and method modifying the shared variables are declared as `synchronized`.
 
 ```
-Thread size: 8, counterLimit: 100
-Atomic Thread called: 800
+Thread size: 8, counterLimit: 100000000
+Atomic Thread called: 800000000
 ```
 
-It works fine with 3 digits, but if you increase the digit, same problem we've seen before occurs. 
+Impressive!
 
-### 6. monitor lock
-
-
+# sychronized 는 성능 저하의 문제가 발생할 수 있으므로, 최대한 좁은 스코프에서 사용해야 한다. 
 
 
-### AtomicType
+
+### 6. atomic lock
+
+
+
+
 
 
 
@@ -424,46 +473,14 @@ Thread1 - Count: 5
 Thread2 - Count: 5
 ```
 
-Now all threads are executed in sequence, with each thread counting exactly once before the next thread begins its count. It's time to raise the hurdle. 
-
-What if I change the task from simply printing out to something else?  
-
-```java
-
-```
-
-It seems that every result of each equation should be true because `lock` and `methodCalled` are incremented consecutively. But, as you might observe, the results don't match the expectations.
-
-```
-number of threads - 6, count limit - 1000000
-Final lock Value: 6000000
-Final methodCalled Value: 5994124
-```
 
 
-```
-number of threads - 1000000, count limit - 1000000
-Final lock Value: 6000000
-Final methodCalled Value: 6000000
-```
-
-The occurrence of these errors indicates that the value of `lock` was different from the value of `methodCalled` at the comparison. Even though `volatile` ensures visibility of the variable among threads, such errors can occur because multiple thread may try to modify the shared variable simultaneously.
-We need to separate the section modifying shared variables, and ensure that only one thread the section can access to this section at a time. This section is called the `Critical Section`  
-
-# Atomic
-
-
-# wait() and modify()
-
-
-# 할일 목록.
+# Todo 
 
 # We will use `wait()` and `notify()` method to coordinate the execution.
 
-# 1. wait(), notify() 를 이용해서. synchronized 를 활용하지 않고. 활용하고.
-#   - mutex의 문제. 락을 누가 점유하는 문제. 
-
 # 2. 행렬 계산기 구현. 싱글 스레드와 멀티 스레드를 활용.  
+
 # 3. 성능 비교. multi threading 이 진짜 빠른가? 빠른가의 의미는? 
 
 # 소켓 프로그래밍. 
