@@ -20,7 +20,9 @@ public class SynchronizedNumberCounter implements Runnable {
 
 		for (int i = 0; i < countLimit; i++) {
 
-			takeLock();
+			waitLock();
+
+			acquireLock();
 
 			criticalSection();
 
@@ -28,9 +30,12 @@ public class SynchronizedNumberCounter implements Runnable {
 		}
 	}
 
-	private synchronized void takeLock() {
+	private void waitLock() {
 		while (lock <= 0) {
-		};
+			System.out.println(Thread.currentThread() + " is waiting.");
+		}
+	}
+	private synchronized void acquireLock() {
 		lock --;
 	}
 

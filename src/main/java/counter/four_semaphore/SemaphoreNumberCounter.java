@@ -18,7 +18,7 @@ public class SemaphoreNumberCounter implements Runnable {
 	public void run() {
 		for (int i = 0; i < countLimit; i++) {
 
-			takeLock();
+			acquireLock();
 
 			criticalSection();
 
@@ -26,7 +26,7 @@ public class SemaphoreNumberCounter implements Runnable {
 		}
 	}
 
-	private void takeLock() {
+	private void acquireLock() {
 		while (lock <= 0) {
 
 		};
