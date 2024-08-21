@@ -1,6 +1,6 @@
 ## Multithreading Exercise
 
-Our goal of this exercise is to create a matrics 
+Our goal of this exercise is to create a matrix multiplication program using multithreading.
 
 ### 1. Simple Counter
 
@@ -360,7 +360,7 @@ However, if the `lock` value is greater than 0, multiple threads might mistakenl
 Additionally, when threads update the `lock` value, it might be overwritten due to simultaneous access.
 Therefore, we need to ensure that access to the shared variables is restricted to only one thread at a time. In java, we can use `synchronized`.
 
-# 자바 객체의 Lock 이야기와, (this)를 사용하면 안되는 이유. thread Local 에 대해서.
+[//]: # ( 자바 객체의 Lock 이야기와, &#40;this&#41;를 사용하면 안되는 이유. thread Local 에 대해서. )
 
 ```java
 package counter.e_synchronized;
@@ -434,15 +434,11 @@ Atomic Thread called: 800000000
 
 Impressive!
 
-# sychronized 는 성능 저하의 문제가 발생할 수 있으므로, 최대한 좁은 스코프에서 사용해야 한다. 
+[//]: # (# synchronized 는 성능 저하의 문제가 발생할 수 있으므로, 최대한 좁은 스코프에서 사용해야 한다. )
 
 
 
 ### 6. atomic lock
-
-
-
-
 
 
 
@@ -475,15 +471,17 @@ Thread2 - Count: 5
 
 
 
-# Todo 
+[//]: # (# Todo )
 
-# We will use `wait()` and `notify()` method to coordinate the execution.
+[//]: # ()
+[//]: # (# We will use `wait&#40;&#41;` and `notify&#40;&#41;` method to coordinate the execution.)
 
-# 2. 행렬 계산기 구현. 싱글 스레드와 멀티 스레드를 활용.  
+[//]: # ()
+[//]: # (# 2. 행렬 계산기 구현. 싱글 스레드와 멀티 스레드를 활용.  )
 
-# 3. 성능 비교. multi threading 이 진짜 빠른가? 빠른가의 의미는? 
+[//]: # ()
+[//]: # (# 3. 성능 비교. multi threading 이 진짜 빠른가? 빠른가의 의미는? )
 
-# 소켓 프로그래밍. 
+[//]: # ()
+[//]: # (# 소켓 프로그래밍. )
 
-
-# multi-thread-exercise-
