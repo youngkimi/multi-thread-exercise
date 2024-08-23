@@ -1,6 +1,6 @@
-package multiplier.cellunit;
+package multiplier.runnable;
 
-import static multiplier.cellunit.MatrixMultiplier.*;
+import static multiplier.runnable.MatrixMultiplier.*;
 
 public class RowMultiplier implements Runnable {
 
