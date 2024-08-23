@@ -1,6 +1,6 @@
 ## Multithreading Exercise
 
-Our goal of this exercise is to create a matrix multiplication program using multithreading.
+Our goal of this exercise is to create a matrix multiplier program using multithreading.
 
 ### 1. Simple Counter
 
