@@ -1,5 +1,16 @@
 package multiplier.callable;
 
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
 public class MatrixMultiplier {
 	public static final MatrixMultiplier matrixCallableMultiplier = new MatrixMultiplier();
 
@@ -41,6 +52,43 @@ public class MatrixMultiplier {
 				System.out.println("Error in callable multiply by row unit: " + e.getMessage());
 				throw new RuntimeException();
 			}
+		}
+
+		return matrixMultiplied;
+	}
+
+	public int[][] multiplyMatrixByRowThreadPool(int[][] matrixLeft, int[][] matrixRight, int threadPoolSize) {
+
+		int rowLeft = matrixLeft.length;
+		int colRight = matrixRight[0].length;
+
+		int[][] matrixMultiplied = new int[rowLeft][colRight];
+
+		List<Future<int[]>> futures = new LinkedList<>();
+
+		ExecutorService pool = new ThreadPoolExecutor(threadPoolSize, threadPoolSize, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingDeque<>());
+		// ExecutorService pool = Executors.newFixedThreadPool(threadPoolSize);
+
+			/*
+				int corePoolSize,
+			 	int maximumPoolSize,
+			 	long keepAliveTime,
+			 	TimeUnit unit,
+			 	BlockingQueue<Runnable> workQueue)
+			 */
+
+		for (int r = 0; r < rowLeft; r++) {
+			futures.add(pool.submit(new RowMultiplier(matrixLeft, matrixRight, r)));
+		}
+
+		try {
+			for (int r = 0; r < rowLeft; r++) {
+				matrixMultiplied[r] = futures.get(r).get();
+			}
+		} catch (InterruptedException | ExecutionException e) {
+			e.printStackTrace();
+		} finally {
+			pool.shutdown();
 		}
 
 		return matrixMultiplied;

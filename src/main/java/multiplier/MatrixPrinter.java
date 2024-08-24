@@ -6,8 +6,11 @@ public class MatrixPrinter {
     public static final MatrixPrinter matrixPrinter = new MatrixPrinter();
 
     protected static void printMatrix(int[][] matrix) {
+        StringBuilder sb = new StringBuilder();
         for (int[] row : matrix) {
-            System.out.println(Arrays.toString(row));
+            sb.append(Arrays.toString(row));
+            sb.append('\n');
         }
+        System.out.println(sb);
     }
 }
