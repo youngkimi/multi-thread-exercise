@@ -2,13 +2,17 @@ package multiplier.runnable;
 
 import static multiplier.runnable.MatrixMultiplier.*;
 
-public class RowMultiplier implements Runnable {
+public class CellMultiplier implements Runnable {
 
 	// means left Row, right Column
+	int[][] matrixLeft;
+	int[][] matrixRight;
 	int row;
 	int col;
 
-	public RowMultiplier(int row, int col) {
+	public CellMultiplier(int[][] matrixLeft, int[][] matrixRight, int row, int col) {
+		this.matrixLeft = matrixLeft;
+		this.matrixRight = matrixRight;
 		this.row = row;
 		this.col = col;
 	}

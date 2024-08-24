@@ -1,26 +1,30 @@
 package multiplier.callable;
 
-import static multiplier.runnable.MatrixMultiplier.*;
+import java.util.concurrent.Callable;
 
-public class RowMultiplier implements Runnable {
+public class RowMultiplier implements Callable<int[]> {
 
-	// means left Row, right Column
+	// need the whole matrix input
+	int[][] matrixLeft;
+	int[][] matrixRight;
 	int row;
-	int col;
 
-	public RowMultiplier(int row, int col) {
+	public RowMultiplier(int[][] matrixLeft, int[][] matrixRight, int row) {
+		this.matrixLeft = matrixLeft;
+		this.matrixRight = matrixRight;
 		this.row = row;
-		this.col = col;
 	}
 
 	@Override
-	public void run() {
-		int sum = 0;
+	public int[] call() throws Exception {
+		int[] resultRow = new int[matrixLeft.length];
 
-		for (int i = 0; i < matrixLeft[0].length; i++) {
-			sum += matrixLeft[row][i] * matrixRight[i][col];
-		}
+		for (int i = 0; i < matrixLeft.length; i++) {
+			for (int j = 0; j < matrixRight.length; j++) {
+				resultRow[i] += matrixLeft[row][j] * matrixRight[j][i];
+			}
+ 		}
 
-		matrixMultiplied[row][col] = sum;
+		return resultRow;
 	}
 }

@@ -4,9 +4,9 @@ import java.util.Random;
 
 public class MatrixGenerator {
 
-	public static MatrixGenerator matrixGenerator = new MatrixGenerator();
+	public static final MatrixGenerator matrixGenerator = new MatrixGenerator();
 
-	public MatrixGenerator() {
+	private MatrixGenerator() {
 	}
 
 	/**
@@ -19,7 +19,7 @@ public class MatrixGenerator {
 	 * the cell number does not contain Integer.MIN_VALUE.
 	 */
 
-	public int[][] genIntMatrix(int row, int col, int boundary, boolean direction) {
+	protected static int[][] genIntMatrix(int row, int col, int boundary, boolean direction) {
 		int[][] matrix = new int[row][col];
 
 		for (int i = 0; i < row; i++) {

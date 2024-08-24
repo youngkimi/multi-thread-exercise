@@ -1,40 +1,45 @@
 package multiplier.callable;
 
 public class MatrixMultiplier {
+	public static final MatrixMultiplier matrixCallableMultiplier = new MatrixMultiplier();
 
-	public static MatrixMultiplier matrixMultiplier = new MatrixMultiplier();
-
-	public static int[][] matrixMultiplied;
-	protected static int[][] matrixLeft;
-	protected static int[][] matrixRight;
-
-	public MatrixMultiplier() {
+	private MatrixMultiplier() {
 	}
 
-	public int[][] multiplyMatrix(int[][] matrixLeft, int[][] matrixRight) {
-
-		this.matrixLeft = matrixLeft;
-		this.matrixRight = matrixRight;
+	public int[][] multiplyMatrixByCell(int[][] matrixLeft, int[][] matrixRight) {
 
 		int rowLeft = matrixLeft.length;
 		int colRight = matrixRight[0].length;
 
-		matrixMultiplied = new int[rowLeft][colRight];
-
-		Thread[] threads = new Thread[rowLeft * colRight];
+		int[][] matrixMultiplied = new int[rowLeft][colRight];
 
 		for (int r = 0; r < rowLeft; r++) {
 			for (int c = 0; c < colRight; c++) {
-				threads[r*rowLeft + c] = new Thread(new RowMultiplier(r, c));
-				threads[r*rowLeft + c].start();
+				try {
+					matrixMultiplied[r][c] = new CellMultiplier(matrixLeft, matrixRight, r, c).call();
+				} catch (Exception e) {
+					System.out.println("Error in callable multiply by cell unit: " + e.getMessage());
+					throw new RuntimeException();
+				}
 			}
 		}
 
-		for (Thread th : threads) {
+		return matrixMultiplied;
+	}
+
+	public int[][] multiplyMatrixByRow(int[][] matrixLeft, int[][] matrixRight) {
+
+		int rowLeft = matrixLeft.length;
+		int colRight = matrixRight[0].length;
+
+		int[][] matrixMultiplied = new int[rowLeft][colRight];
+
+		for (int r = 0; r < rowLeft; r++) {
 			try {
-				th.join();
-			} catch (InterruptedException e) {
-				System.out.println("Interrupted: " + th.getName());
+				matrixMultiplied[r] = new RowMultiplier(matrixLeft, matrixRight, r).call();
+			} catch (Exception e) {
+				System.out.println("Error in callable multiply by row unit: " + e.getMessage());
+				throw new RuntimeException();
 			}
 		}
 
