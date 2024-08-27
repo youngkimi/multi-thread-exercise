@@ -1,14 +1,15 @@
 package counter.f_atomic;
 
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Queue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class AtomicCounterExample {
 
 	protected static int threadSize = 8;
 	protected static Thread[] threads = new Thread[threadSize];
-	// int value updated atomically. lock-free thread-safe programming on single variables.
-	protected static AtomicInteger threadCalled = new AtomicInteger(0);
-	protected static final Object lock = new Object();
+	protected static int threadCalled = 0;
+	protected static int lock = 1;
+	protected static Queue<Thread> readyQueue = new LinkedBlockingQueue<>();
 
 	public static void main(String[] args) {
 
@@ -47,12 +48,34 @@ public class AtomicCounterExample {
 		@Override
 		public void run() {
 			for (int i = 0; i < countLimit; i++) {
-				criticalSection();
+                try {
+                    acquireLock();
+					criticalSection();
+					releaseLock();
+                } catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+                }
 			}
 		}
 
+		private synchronized void acquireLock() throws InterruptedException {
+			while (lock < 1) {
+				readyQueue.add(Thread.currentThread());
+				Thread.currentThread().wait();
+			}
+			lock --;
+		}
+
 		private synchronized void criticalSection() {
-			threadCalled.getAndIncrement();
+			threadCalled ++;
+		}
+
+		private synchronized void releaseLock() {
+			lock++;
+			if (!readyQueue.isEmpty()) {
+				Thread nextThread = readyQueue.poll();
+				nextThread.interrupt();
+			}
 		}
     }
 }

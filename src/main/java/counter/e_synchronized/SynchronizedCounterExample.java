@@ -50,7 +50,7 @@ public class SynchronizedCounterExample {
 			}
 		}
 
-		private synchronized void criticalSection() {
+		private void criticalSection() {
 			synchronized (lock) {
 				threadCalled++;
 			}

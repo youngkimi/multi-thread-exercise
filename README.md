@@ -337,11 +337,9 @@ But unfortunately, you need to make sure that shared variables are accessed by o
 If multiple threads access them simultaneously, it can cause concurrency problems.
 That's why you should keep the `lockCount` at 1, which is what we call a `binary semaphore`.
 
-You might think there is no difference between `mutex` and `binary semaphore`, but there are some distinctions.
-First, since a `mutex` can lock a target object, it cannot be accessed by another thread as long as one thread is holding the lock.
-On the other hand, `binary semaphore` doesn't enforce ownership, meaning that any thread can release the semaphore, not just the one that acquired it.
-
-waiting thread implemented by `mutex` cannot be wakened up by another thread.
+> You might think there is no difference between `mutex` and `binary semaphore`, but there are some distinctions.
+> First, since a `mutex` can lock a target object, it cannot be accessed by another thread as long as one thread is holding the lock.
+> On the other hand, `binary semaphore` doesn't enforce ownership, meaning that any thread can release the semaphore, not just the one that acquired it.
 
 ```
 Thread size: 3, counterLimit: 100
@@ -360,7 +358,32 @@ However, if the `lock` value is greater than 0, multiple threads might mistakenl
 Additionally, when threads update the `lock` value, it might be overwritten due to simultaneous access.
 Therefore, we need to ensure that access to the shared variables is restricted to only one thread at a time. In java, we can use `synchronized`.
 
-[//]: # ( 자바 객체의 Lock 이야기와, &#40;this&#41;를 사용하면 안되는 이유. thread Local 에 대해서. )
+By applying `synchronized`, you can make a section atomic, allowing only one thread to access it at a time.
+
+```java
+private synchronized void criticalSection() {
+    aStaticInt++;
+}
+```
+
+```java
+private final Object lock = new Object();
+
+private void criticalSection() {
+    synchronized (lock) {
+        aStaticInt++;
+    }
+}
+```
+
+In Java, every object has its own lock that controls access to synchronized blocks or method.
+This lock is managed by a monitor, which maintains a queue of threads waiting to gain the lock on that instance.
+When a thread encounter the `synchronized` block, it trys to acquire the `lock` of the instance.
+If the `lock` is available, the thread holds the `lock`.
+However, if the `lock` is already held by another thread, the current thread is placed into the monitor's ready queue, where is waits until the lock is released.
+Once the thread holding the lock exits the `synchronized` block, it releases the `lock`, notifying other thread(s) that the `lock` had been released.   
+
+The `final` keyword prevents the reallocation of the object reference, meaning that once the `lock` object is assigned, it cannot be pointed to a different object.
 
 ```java
 package counter.e_synchronized;
@@ -415,7 +438,7 @@ public class SynchronizedCounterExample {
             }
         }
 
-        private synchronized void criticalSection() {
+        private void criticalSection() {
             synchronized (lock) {
                 threadCalled++;
             }
@@ -434,41 +457,10 @@ Atomic Thread called: 800000000
 
 Impressive!
 
-[//]: # (# synchronized 는 성능 저하의 문제가 발생할 수 있으므로, 최대한 좁은 스코프에서 사용해야 한다. )
+But, always be aware that using `synchronized` can negatively impact performance. 
+To mitigate this, try to minimize the scope of `synchronized` sections to only include the essential part that needs synchronization.
 
-
-
-### 6. atomic lock
-
-
-
-
-But, although you add `synchronized` to your method accessing to shared variables, error may occur during 
-
-
-
-Simply adding synchronized to the methods that use the shared variables makes it work perfectly.
-
-But in fact, simply adding `synchronized` is not enough. 
-
-```
-Thread0 - Count: 1
-Thread1 - Count: 1
-Thread2 - Count: 1
-Thread0 - Count: 2
-Thread1 - Count: 2
-Thread2 - Count: 2
-Thread0 - Count: 3
-Thread1 - Count: 3
-Thread2 - Count: 3
-Thread0 - Count: 4
-Thread1 - Count: 4
-Thread2 - Count: 4
-Thread0 - Count: 5
-Thread1 - Count: 5
-Thread2 - Count: 5
-```
-
+### 6. atomic
 
 
 [//]: # (# Todo )
@@ -481,6 +473,8 @@ Thread2 - Count: 5
 
 [//]: # ()
 [//]: # (# 3. 성능 비교. multi threading 이 진짜 빠른가? 빠른가의 의미는? )
+
+[//]: # (thread Local 에 대해서. )
 
 [//]: # ()
 [//]: # (# 소켓 프로그래밍. )
